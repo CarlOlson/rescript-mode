@@ -64,31 +64,14 @@
        (indent-region 1 (+ 1 (buffer-size))))
      indented)))
 
-
 (ert-deftest indent-struct-fields-aligned ()
   (test-indent "
-type foo { bar: int,
-           baz: int};
+type foo = { bar: int,
+             baz: int};
 
-type blah {x:int,
-           y:int,
-           z:string};"))
-
-;; Reason will also eventually support line comments, which are not supported in OCaml.
-;; (ert-deftest indent-inside-braces ()
-;;   (test-indent
-;;    "
-;; // struct fields out one level:
-;; struct foo {
-;;     a:int,
-;;     // comments too
-;;     b:char
-;; }
-
-;; fun bar(x:Box<int>) {   // comment here should not affect the next indent
-;;     bla();
-;;     bla();
-;; }"))
+type blah = {x:int,
+             y:int,
+             z:string};"))
 
 (ert-deftest indent-top-level ()
   (test-indent "
@@ -428,51 +411,46 @@ list of substrings of `STR' each followed by its face."
    '("'\"'" font-lock-string-face
      "let" font-lock-keyword-face)))
 
-(ert-deftest font-lock-fun-contains-capital ()
-  (rescript-test-font-lock
-   "fun foo_Bar() => {}"
-   '("fun" font-lock-keyword-face)))
-
 (ert-deftest font-lock-single-quote-character-literal ()
   (rescript-test-font-lock
-   "fun main() => { let ch = '\\''; }"
-   '("fun" font-lock-keyword-face
+   "let main = () => { let ch = '\\''; }"
+   '("let" font-lock-keyword-face
      "let" font-lock-keyword-face
      "'\\''" font-lock-string-face)))
 
 (ert-deftest font-lock-escaped-double-quote-character-literal ()
   (rescript-test-font-lock
-   "fun main() => { let ch = '\\\"'; }"
-   '("fun" font-lock-keyword-face
+   "let main = () => { let ch = '\\\"'; }"
+   '("let" font-lock-keyword-face
      "let" font-lock-keyword-face
      "'\\\"'" font-lock-string-face)))
 
 (ert-deftest font-lock-escaped-backslash-character-literal ()
   (rescript-test-font-lock
-   "fun main() => { let ch = '\\\\'; }"
-   '("fun" font-lock-keyword-face
+   "let main = () => { let ch = '\\\\'; }"
+   '("let" font-lock-keyword-face
      "let" font-lock-keyword-face
      "'\\\\'" font-lock-string-face)))
 
 (ert-deftest font-lock-string-ending-with-r-not-raw-string ()
   (rescript-test-font-lock
-   "fun f() => {
+   "let f = () => {
     \"Er\";
 };
 
-fun g() {
+let g = () => {
     \"xs\";
 };"
-   '("fun" font-lock-keyword-face
+   '("let" font-lock-keyword-face
      "\"Er\"" font-lock-string-face
-     "fun" font-lock-keyword-face
+     "let" font-lock-keyword-face
      "\"xs\"" font-lock-string-face)))
 
 (ert-deftest rescript-test-two-character-quotes-in-a-row ()
   (with-temp-buffer
     (rescript-mode)
     (font-lock-fontify-buffer)
-    (insert "'\\n','a', fun")
+    (insert "'\\n','a', let")
     (font-lock-after-change-function 1 12 0)
 
     (should (equal 'font-lock-string-face (get-text-property 3 'face)))
@@ -483,10 +461,10 @@ fun g() {
 
 (ert-deftest single-quote-null-char ()
   (rescript-test-font-lock
-   "'\\0' 'a' fun"
+   "'\\0' 'a' let"
    '("'\\0'" font-lock-string-face
      "'a'" font-lock-string-face
-     "fun" font-lock-keyword-face)))
+     "let" font-lock-keyword-face)))
 
 (ert-deftest r-in-string-after-single-quoted-double-quote ()
   (rescript-test-font-lock
@@ -494,3 +472,21 @@ fun g() {
    '("'\"'" font-lock-string-face
      "\"r\"" font-lock-string-face
      "\"oops\"" font-lock-string-face)))
+
+(ert-deftest quoted-variable-names ()
+  (rescript-test-font-lock
+   "\\\"foo\""
+   '("\"foo\"" font-lock-string-face)))
+
+(ert-deftest backtick-string ()
+  (rescript-test-font-lock
+   "`foo`"
+   '("`foo`" font-lock-string-face)))
+
+;; This may be too complex to pass
+;; (ert-deftest backtick-string-interpolation ()
+;;   (rescript-test-font-lock
+;;    "`${foo}`"
+;;    '("`" font-lock-string-face
+;;      "${foo}" font-lock-variable-name-face
+;;      "`" font-lock-string-face)))

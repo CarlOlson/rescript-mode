@@ -47,12 +47,16 @@
     (modify-syntax-entry ?\" "\"" table)
     (modify-syntax-entry ?\\ "\\" table)
     (modify-syntax-entry ?\' "_"  table)
+    (modify-syntax-entry ?\` "\"" table)
 
     ;; Comments
-    (modify-syntax-entry ?/  ". 124b" table)
-    (modify-syntax-entry ?*  ". 23n"  table)
-    (modify-syntax-entry ?\n "> b"    table)
-    (modify-syntax-entry ?\^m "> b"   table)
+    (modify-syntax-entry ?\/  ". 124b" table)
+    (modify-syntax-entry ?\*  ". 23n"  table)
+    (modify-syntax-entry ?\n  "> b"    table)
+    (modify-syntax-entry ?\^m "> b"    table)
+
+    ;; Quoted variable names
+    (modify-syntax-entry ?\\ "\\ p" table)
 
     table))
 
@@ -68,35 +72,17 @@
 
 ;; Font-locking definitions and helpers
 (defconst rescript-mode-keywords
-  '("and" "as" "asr" "assert"
-    "begin"
-    "class" "constraint"
-    "do" "done" "downto"
-    "else" "end" "esfun"
-    "exception" "external"
-    "for" "fun" "function" "functor"
-    "if" "in" "include" "inherit" "initializer"
-    "land" "lazy" "let" "lor" "lsl" "lsr" "lxor"
-    "mod" "module" "mutable"
-    "new" "nonrec"
-    "object" "of" "open" "or"
-    "pri" "pub"
-    "rec" "ref"
-    "sig" "struct" "switch"
-    "then" "to" "try" "type"
-    "val" "virtual"
-    "when" "while" "with"
-
-    ;; these used to be keywords but no longer are
-    "match"))
+  (split-string
+   "and as assert constraint else exception external for if in
+include lazy let module mutable of open rec switch try type when
+while with"))
 
 (defconst rescript-mode-consts
   '("true" "false"))
 
 (defconst rescript-special-types
-  '("int" "float" "string" "char"
-    "bool" "unit" "list" "array" "exn"
-    "option" "ref"))
+  (split-string
+   "int float string char bool unit list array exn option ref"))
 
 (defconst rescript-camel-case
   (rx symbol-start
@@ -164,40 +150,21 @@ Argument WORDS argument to pass to `regexp-opt`."
          (t
           (rescript-mode-try-find-alternate-file mod-name ".rei")))))))
 
-(defun rescript--syntax-propertize-multiline-string (end)
-  "Propertize Reason multiline string.
-Argument END marks the end of the string."
-  (let ((ppss (syntax-ppss)))
-    (when (eq t (nth 3 ppss))
-      (let ((key (save-excursion
-                   (goto-char (nth 8 ppss))
-                   (and (looking-at "{\\([a-z]*\\)|")
-                        (match-string 1)))))
-        (when (search-forward (format "|%s}" key) end 'move)
-          (put-text-property (1- (match-end 0)) (match-end 0)
-                             'syntax-table (string-to-syntax "|")))))))
-
 (defun rescript-syntax-propertize-function (start end)
   "Propertize Reason function.
 Argument START marks the beginning of the function.
 Argument END marks the end of the function."
   (goto-char start)
-  (rescript--syntax-propertize-multiline-string end)
   (funcall
    (syntax-propertize-rules
-    (rescript--char-literal-rx (1 "\"") (2 "\""))
-    ;; multi line strings
-    ("\\({\\)[a-z]*|"
-     (1 (prog1 "|"
-          (goto-char (match-end 0))
-          (rescript--syntax-propertize-multiline-string end)))))
+    (rescript--char-literal-rx (1 "\"") (2 "\"")))
    (point) end))
 
 (defvar rescript-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c\C-a" #'rescript-mode-find-alternate-file)
-    (define-key map "\C-c\C-r" #'refmt-region-ocaml-to-rescript)
-    (define-key map "\C-c\C-o" #'refmt-region-rescript-to-ocaml)
+    (define-key map (kbd "C-c C-a") #'rescript-mode-find-alternate-file)
+    (define-key map (kbd "C-c C-r") #'refmt-region-ocaml-to-rescript)
+    (define-key map (kbd "C-c C-o") #'refmt-region-rescript-to-ocaml)
     map))
 
 ;;;###autoload
@@ -233,7 +200,7 @@ Argument END marks the end of the function."
   (setq-local parse-sexp-lookup-properties t))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.\\(resi?\\|rei?\\)$" . rescript-mode))
+(add-to-list 'auto-mode-alist '("\\.resi?$" . rescript-mode))
 
 (defun rescript-mode-reload ()
   "Reload Reason mode."
