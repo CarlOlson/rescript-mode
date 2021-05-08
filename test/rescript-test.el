@@ -1,24 +1,24 @@
-;;; reason-mode-tests.el --- ERT tests for reason-mode.el
+;;; rescript-mode-tests.el --- ERT tests for rescript-mode.el
 ;; Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
 ;;; Commentary:
 
-;; Tests for reason-mode.
+;; Tests for rescript-mode.
 
 ;;; Code:
 
 (message "Running tests on Emacs %s" emacs-version)
 
 (require 'ert-x)
-(require 'reason-mode)
+(require 'rescript-mode)
 (require 'cl)
 
-(setq reason-test-fill-column 32)
+(setq rescript-test-fill-column 32)
 
-(defun reason-compare-code-after-manip (original point-pos manip-func expected got)
+(defun rescript-compare-code-after-manip (original point-pos manip-func expected got)
   (equal expected got))
 
-(defun reason-test-explain-bad-manip (original point-pos manip-func expected got)
+(defun rescript-test-explain-bad-manip (original point-pos manip-func expected got)
   (if (equal expected got)
       nil
     (list
@@ -38,21 +38,21 @@
                             (goto-char ,(+ 1 i))
                             expected ,(char-to-string ei)
                             got ,(char-to-string oi))))))
-(put 'reason-compare-code-after-manip 'ert-explainer
-     'reason-test-explain-bad-manip)
+(put 'rescript-compare-code-after-manip 'ert-explainer
+     'rescript-test-explain-bad-manip)
 
-(defun reason-test-manip-code (original point-pos manip-func expected)
+(defun rescript-test-manip-code (original point-pos manip-func expected)
   (with-temp-buffer
-    (reason-mode)
+    (rescript-mode)
     (insert original)
     (goto-char point-pos)
     (funcall manip-func)
-    (should (reason-compare-code-after-manip
+    (should (rescript-compare-code-after-manip
              original point-pos manip-func expected (buffer-string)))))
 
 (defun test-indent (indented &optional deindented)
   (let ((deindented (or deindented (replace-regexp-in-string "^[[:blank:]]*" "      " indented))))
-    (reason-test-manip-code
+    (rescript-test-manip-code
      deindented
      1
      (lambda ()
@@ -392,14 +392,14 @@ let make = (name, children) => {
 };
 "))
 
-(defun reason-get-buffer-pos (pos-symbol)
+(defun rescript-get-buffer-pos (pos-symbol)
   "Get buffer position from POS-SYMBOL.
 
-POS-SYMBOL is a symbol found in `reason-test-positions-alist'.
+POS-SYMBOL is a symbol found in `rescript-test-positions-alist'.
 Convert the line-column information from that list into a buffer position value."
   (interactive "P")
   (let* (
-         (line-and-column (cadr (assoc pos-symbol reason-test-positions-alist)))
+         (line-and-column (cadr (assoc pos-symbol rescript-test-positions-alist)))
          (line (nth 0 line-and-column))
          (column (nth 1 line-and-column)))
     (save-excursion
@@ -407,17 +407,17 @@ Convert the line-column information from that list into a buffer position value.
       (move-to-column column)
       (point))))
 
-(defun reason-test-fontify-string (str)
+(defun rescript-test-fontify-string (str)
   (with-temp-buffer
-    (reason-mode)
+    (rescript-mode)
     (insert str)
     (font-lock-fontify-buffer)
     (buffer-string)))
 
-(defun reason-test-group-str-by-face (str)
-  "Fontify `STR' in reason-mode and group it by face, returning a
+(defun rescript-test-group-str-by-face (str)
+  "Fontify `STR' in rescript-mode and group it by face, returning a
 list of substrings of `STR' each followed by its face."
-  (loop with fontified = (reason-test-fontify-string str)
+  (loop with fontified = (rescript-test-fontify-string str)
         for start = 0 then end
         while start
         for end   = (next-single-property-change start 'face fontified)
@@ -426,57 +426,57 @@ list of substrings of `STR' each followed by its face."
         if prop
         append (list text prop)))
 
-(defun reason-test-font-lock (source face-groups)
+(defun rescript-test-font-lock (source face-groups)
   "Test that `SOURCE' fontifies to the expected `FACE-GROUPS'"
-  (should (equal (reason-test-group-str-by-face source)
+  (should (equal (rescript-test-group-str-by-face source)
                  face-groups)))
 
 (ert-deftest font-lock-attribute-inside-string ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "\"#[foo]\""
    '("\"#[foo]\"" font-lock-string-face)))
 
 (ert-deftest font-lock-attribute-inside-comment ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "/* #[foo] */"
    '("/* " font-lock-comment-delimiter-face
      "#[foo] " font-lock-comment-face
      "*/" font-lock-comment-delimiter-face)))
 
 (ert-deftest font-lock-double-quote-character-literal ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "'\"'; let"
    '("'\"'" font-lock-string-face
      "let" font-lock-keyword-face)))
 
 (ert-deftest font-lock-fun-contains-capital ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "fun foo_Bar() => {}"
    '("fun" font-lock-keyword-face)))
 
 (ert-deftest font-lock-single-quote-character-literal ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "fun main() => { let ch = '\\''; }"
    '("fun" font-lock-keyword-face
      "let" font-lock-keyword-face
      "'\\''" font-lock-string-face)))
 
 (ert-deftest font-lock-escaped-double-quote-character-literal ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "fun main() => { let ch = '\\\"'; }"
    '("fun" font-lock-keyword-face
      "let" font-lock-keyword-face
      "'\\\"'" font-lock-string-face)))
 
 (ert-deftest font-lock-escaped-backslash-character-literal ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "fun main() => { let ch = '\\\\'; }"
    '("fun" font-lock-keyword-face
      "let" font-lock-keyword-face
      "'\\\\'" font-lock-string-face)))
 
 (ert-deftest font-lock-string-ending-with-r-not-raw-string ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "fun f() => {
     \"Er\";
 };
@@ -489,9 +489,9 @@ fun g() {
      "fun" font-lock-keyword-face
      "\"xs\"" font-lock-string-face)))
 
-(ert-deftest reason-test-two-character-quotes-in-a-row ()
+(ert-deftest rescript-test-two-character-quotes-in-a-row ()
   (with-temp-buffer
-    (reason-mode)
+    (rescript-mode)
     (font-lock-fontify-buffer)
     (insert "'\\n','a', fun")
     (font-lock-after-change-function 1 12 0)
@@ -503,14 +503,14 @@ fun g() {
     (should (equal 'font-lock-keyword-face (get-text-property 12 'face)))))
 
 (ert-deftest single-quote-null-char ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "'\\0' 'a' fun"
    '("'\\0'" font-lock-string-face
      "'a'" font-lock-string-face
      "fun" font-lock-keyword-face)))
 
 (ert-deftest r-in-string-after-single-quoted-double-quote ()
-  (reason-test-font-lock
+  (rescript-test-font-lock
    "'\"';\n\"r\";\n\"oops\";"
    '("'\"'" font-lock-string-face
      "\"r\"" font-lock-string-face

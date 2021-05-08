@@ -1,4 +1,4 @@
-;;; refmt.el --- utility functions to format reason code
+;;; refmt.el --- utility functions to format rescript code
 
 ;; Copyright (c) 2014 The go-mode Authors. All rights reserved.
 ;; Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
@@ -71,13 +71,13 @@ a `before-save-hook'."
   "Add this to .emacs to run refmt on the current buffer when saving:
  (add-hook 'before-save-hook 'refmt-before-save)."
     (interactive)
-      (when (eq major-mode 'reason-mode) (refmt)))
+      (when (eq major-mode 'rescript-mode) (refmt)))
 
-(defun reason--goto-line (line)
+(defun rescript--goto-line (line)
   (goto-char (point-min))
     (forward-line (1- line)))
 
-(defun reason--delete-whole-line (&optional arg)
+(defun rescript--delete-whole-line (&optional arg)
     "Delete the current line without putting it in the `kill-ring'.
 Derived from function `kill-whole-line'.  ARG is defined as for that
 function."
@@ -103,7 +103,7 @@ function."
            (delete-region (progn (forward-visible-line 0) (point))
                                                   (progn (forward-visible-line arg) (point))))))
 
-(defun reason--apply-rcs-patch (patch-buffer &optional start-pos)
+(defun rescript--apply-rcs-patch (patch-buffer &optional start-pos)
   "Apply an RCS-formatted diff from PATCH-BUFFER to the current buffer."
   (setq start-pos (or start-pos (point-min)))
   (let ((first-line (line-number-at-pos start-pos))
@@ -124,7 +124,7 @@ function."
         (goto-char (point-min))
         (while (not (eobp))
           (unless (looking-at "^\\([ad]\\)\\([0-9]+\\) \\([0-9]+\\)")
-            (error "invalid rcs patch or internal error in reason--apply-rcs-patch"))
+            (error "invalid rcs patch or internal error in rescript--apply-rcs-patch"))
           (forward-line)
           (let ((action (match-string 1))
                 (from (string-to-number (match-string 2)))
@@ -141,11 +141,11 @@ function."
                     (insert text)))))
              ((equal action "d")
               (with-current-buffer target-buffer
-                (reason--goto-line (- (1- (+ first-line from)) line-offset))
+                (rescript--goto-line (- (1- (+ first-line from)) line-offset))
                 (cl-incf line-offset len)
-                (reason--delete-whole-line len)))
+                (rescript--delete-whole-line len)))
              (t
-              (error "invalid rcs patch or internal error in reason--apply-rcs-patch")))))))))
+              (error "invalid rcs patch or internal error in rescript--apply-rcs-patch")))))))))
 
 (defun refmt--process-errors (filename tmpfile errorfile errbuf)
   (with-current-buffer errbuf
@@ -231,7 +231,7 @@ function."
                (progn
                  (call-process-region start end "diff" nil patchbuf nil "-n" "-"
                                       outputfile)
-                 (reason--apply-rcs-patch patchbuf start)
+                 (rescript--apply-rcs-patch patchbuf start)
                  (message "Applied refmt")
                  (if errbuf (refmt--kill-error-buffer errbuf)))
              (message "Could not apply refmt")
@@ -247,11 +247,11 @@ function."
   (interactive)
   (apply-refmt))
 
-(defun refmt-region-ocaml-to-reason (start end)
+(defun refmt-region-ocaml-to-rescript (start end)
   (interactive "r")
   (apply-refmt start end "ml"))
 
-(defun refmt-region-reason-to-ocaml (start end)
+(defun refmt-region-rescript-to-ocaml (start end)
   (interactive "r")
   (apply-refmt start end "re" "ml"))
 

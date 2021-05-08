@@ -10,7 +10,7 @@
 # option. This file may not be copied, modified, or distributed
 # except according to those terms.
 #
-# This runs the test for emacs reason-mode.
+# This runs the test for emacs rescript-mode.
 # Either $EMACS must be set, or it must be possible to find emacs via PATH.
 
 if [ -z "$EMACS" ]; then
@@ -32,11 +32,11 @@ $( $EMACS -batch --eval "(require 'ert)" > /dev/null 2>&1 ) || {
     exit 3
 };
 
-# All the files reason-mode depends on (in dependency order!)
-DEPS_INCLUDES="-l refmt.el -l reason-indent.el -l reason-interaction.el"
+# All the files rescript-mode depends on (in dependency order!)
+DEPS_INCLUDES="-l refmt.el -l rescript-indent.el -l rescript-interaction.el"
 
 rm *.elc
-WARNINGS="$($EMACS -Q -batch $DEPS_INCLUDES -f batch-byte-compile reason-mode.el 2>&1 | grep -v '^Wrote ')"
+WARNINGS="$($EMACS -Q -batch $DEPS_INCLUDES -f batch-byte-compile rescript-mode.el 2>&1 | grep -v '^Wrote ')"
 if [ -n "$WARNINGS" ]; then
     echo "Byte-compilation failed:"
     # echo "$WARNINGS"
@@ -48,6 +48,6 @@ fi
 
 TEST_INCLUDES=$(ls test/*.el | sed -e 's/^/-l /' | xargs)
 
-# Note that the order of the -l counts, reason-mode.el goes before the test
+# Note that the order of the -l counts, rescript-mode.el goes before the test
 # .el files.
-$EMACS -batch -l ert $DEPS_INCLUDES -l reason-mode.el $TEST_INCLUDES -f ert-run-tests-batch-and-exit
+$EMACS -batch -l ert $DEPS_INCLUDES -l rescript-mode.el $TEST_INCLUDES -f ert-run-tests-batch-and-exit

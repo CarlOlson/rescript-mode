@@ -1,7 +1,7 @@
 (source gnu)
 (source melpa)
 
-(package-file "reason-mode.el")
+(package-file "rescript-mode.el")
 
 (files "*.el"(:exclude ".dir-locals.el"))
 

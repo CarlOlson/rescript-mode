@@ -1,9 +1,9 @@
-;;; reason-mode.el --- A major mode for editing ReasonML -*-lexical-binding: t-*-
+;;; rescript-mode.el --- A major mode for editing ReasonML -*-lexical-binding: t-*-
 ;; Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
 ;; Version: 0.4.0
 ;; Author: Mozilla
-;; Url: https://github.com/reasonml-editor/reason-mode
+;; Url: https://github.com/rescriptml-editor/rescript-mode
 ;; Keywords: languages, ocaml
 ;; Package-Requires: ((emacs "24.3"))
 
@@ -14,7 +14,7 @@
 
 ;;; Commentary:
 ;; This project provides useful functions and helpers for developing code
-;; using the Reason programming language (https://facebook.github.io/reason).
+;; using the Reason programming language (https://facebook.github.io/rescript).
 ;;
 ;; Reason is an umbrella project that provides a curated layer for OCaml.
 ;;
@@ -27,16 +27,16 @@
 
 ;;; Code:
 
-(require 'reason-indent)
+(require 'rescript-indent)
 (require 'refmt)
-(require 'reason-interaction)
+(require 'rescript-interaction)
 
 (eval-when-compile (require 'rx)
                    (require 'compile)
                    (require 'url-vars))
 
 ;; Syntax definitions and helpers
-(defvar reason-mode-syntax-table
+(defvar rescript-mode-syntax-table
   (let ((table (make-syntax-table)))
 
     ;; Operators
@@ -56,18 +56,18 @@
 
     table))
 
-(defgroup reason nil
+(defgroup rescript nil
   "Support for Reason code."
-  :link '(url-link "http://facebook.github.io/reason/")
+  :link '(url-link "http://facebook.github.io/rescript/")
   :group 'languages)
 
-(defcustom reason-mode-hook nil
-  "Hook called by `reason-mode'."
+(defcustom rescript-mode-hook nil
+  "Hook called by `rescript-mode'."
   :type 'hook
-  :group 'reason)
+  :group 'rescript)
 
 ;; Font-locking definitions and helpers
-(defconst reason-mode-keywords
+(defconst rescript-mode-keywords
   '("and" "as" "asr" "assert"
     "begin"
     "class" "constraint"
@@ -90,68 +90,68 @@
     ;; these used to be keywords but no longer are
     "match"))
 
-(defconst reason-mode-consts
+(defconst rescript-mode-consts
   '("true" "false"))
 
-(defconst reason-special-types
+(defconst rescript-special-types
   '("int" "float" "string" "char"
     "bool" "unit" "list" "array" "exn"
     "option" "ref"))
 
-(defconst reason-camel-case
+(defconst rescript-camel-case
   (rx symbol-start
       (group upper (0+ (any word nonascii digit "_")))
       symbol-end))
 
 (eval-and-compile
-  (defconst reason--char-literal-rx
+  (defconst rescript--char-literal-rx
     (rx (seq (group "'")
              (or (seq "\\" anything)
                  (not (any "'\\")))
              (group "'")))))
 
-(defun reason-re-word (inner)
+(defun rescript-re-word (inner)
   "Build a word regexp given INNER."
   (concat "\\<" inner "\\>"))
 
-(defun reason-re-grab (inner)
+(defun rescript-re-grab (inner)
   "Build a grab regexp given INNER."
   (concat "\\(" inner "\\)"))
 
-(defun reason-regexp-opt-symbols (words)
+(defun rescript-regexp-opt-symbols (words)
   "Like `(regexp-opt words 'symbols)`, but will work on Emacs 23.
 See rust-mode PR #42.
 Argument WORDS argument to pass to `regexp-opt`."
   (concat "\\_<" (regexp-opt words t) "\\_>"))
 
 ;;; Syntax highlighting for Reason
-(defvar reason-font-lock-keywords
-  `((,(reason-regexp-opt-symbols reason-mode-keywords) . font-lock-keyword-face)
-    (,(reason-regexp-opt-symbols reason-special-types) . font-lock-builtin-face)
-    (,(reason-regexp-opt-symbols reason-mode-consts) . font-lock-constant-face)
+(defvar rescript-font-lock-keywords
+  `((,(rescript-regexp-opt-symbols rescript-mode-keywords) . font-lock-keyword-face)
+    (,(rescript-regexp-opt-symbols rescript-special-types) . font-lock-builtin-face)
+    (,(rescript-regexp-opt-symbols rescript-mode-consts) . font-lock-constant-face)
 
-    (,reason-camel-case 1 font-lock-type-face)
+    (,rescript-camel-case 1 font-lock-type-face)
 
     ;; Field names like `foo:`, highlight excluding the :
-    (,(concat (reason-re-grab reason-re-ident) ":[^:]") 1 font-lock-variable-name-face)
+    (,(concat (rescript-re-grab rescript-re-ident) ":[^:]") 1 font-lock-variable-name-face)
     ;; Module names like `foo::`, highlight including the ::
-    (,(reason-re-grab (concat reason-re-ident "::")) 1 font-lock-type-face)
+    (,(rescript-re-grab (concat rescript-re-ident "::")) 1 font-lock-type-face)
     ;; Name punned labeled args like ::foo
-    (,(concat "[[:space:]]+" (reason-re-grab (concat "::" reason-re-ident))) 1 font-lock-type-face)
+    (,(concat "[[:space:]]+" (rescript-re-grab (concat "::" rescript-re-ident))) 1 font-lock-type-face)
 
     ;; TODO jsx attribs?
     (,
-     (concat "<[/]?" (reason-re-grab reason-re-ident) "[^>]*" ">")
+     (concat "<[/]?" (rescript-re-grab rescript-re-ident) "[^>]*" ">")
      1 font-lock-type-face)))
 
-(defun reason-mode-try-find-alternate-file (mod-name extension)
+(defun rescript-mode-try-find-alternate-file (mod-name extension)
   "Switch to the file given by MOD-NAME and EXTENSION."
   (let* ((filename (concat mod-name extension))
          (buffer (get-file-buffer filename)))
     (if buffer (switch-to-buffer buffer)
       (find-file filename))))
 
-(defun reason-mode-find-alternate-file ()
+(defun rescript-mode-find-alternate-file ()
   "Switch to implementation/interface file."
   (interactive)
   (let ((name buffer-file-name))
@@ -160,11 +160,11 @@ Argument WORDS argument to pass to `regexp-opt`."
             (e (match-string 2 name)))
         (cond
          ((string= e "i")
-          (reason-mode-try-find-alternate-file mod-name ".re"))
+          (rescript-mode-try-find-alternate-file mod-name ".re"))
          (t
-          (reason-mode-try-find-alternate-file mod-name ".rei")))))))
+          (rescript-mode-try-find-alternate-file mod-name ".rei")))))))
 
-(defun reason--syntax-propertize-multiline-string (end)
+(defun rescript--syntax-propertize-multiline-string (end)
   "Propertize Reason multiline string.
 Argument END marks the end of the string."
   (let ((ppss (syntax-ppss)))
@@ -177,44 +177,44 @@ Argument END marks the end of the string."
           (put-text-property (1- (match-end 0)) (match-end 0)
                              'syntax-table (string-to-syntax "|")))))))
 
-(defun reason-syntax-propertize-function (start end)
+(defun rescript-syntax-propertize-function (start end)
   "Propertize Reason function.
 Argument START marks the beginning of the function.
 Argument END marks the end of the function."
   (goto-char start)
-  (reason--syntax-propertize-multiline-string end)
+  (rescript--syntax-propertize-multiline-string end)
   (funcall
    (syntax-propertize-rules
-    (reason--char-literal-rx (1 "\"") (2 "\""))
+    (rescript--char-literal-rx (1 "\"") (2 "\""))
     ;; multi line strings
     ("\\({\\)[a-z]*|"
      (1 (prog1 "|"
           (goto-char (match-end 0))
-          (reason--syntax-propertize-multiline-string end)))))
+          (rescript--syntax-propertize-multiline-string end)))))
    (point) end))
 
-(defvar reason-mode-map
+(defvar rescript-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c\C-a" #'reason-mode-find-alternate-file)
-    (define-key map "\C-c\C-r" #'refmt-region-ocaml-to-reason)
-    (define-key map "\C-c\C-o" #'refmt-region-reason-to-ocaml)
+    (define-key map "\C-c\C-a" #'rescript-mode-find-alternate-file)
+    (define-key map "\C-c\C-r" #'refmt-region-ocaml-to-rescript)
+    (define-key map "\C-c\C-o" #'refmt-region-rescript-to-ocaml)
     map))
 
 ;;;###autoload
-(define-derived-mode reason-mode prog-mode "Reason"
+(define-derived-mode rescript-mode prog-mode "Reason"
   "Major mode for Reason code.
 
-\\{reason-mode-map}"
-  :group 'reason
-  :syntax-table reason-mode-syntax-table
-  :keymap reason-mode-map
+\\{rescript-mode-map}"
+  :group 'rescript
+  :syntax-table rescript-mode-syntax-table
+  :keymap rescript-mode-map
 
   ;; Syntax
-  (setq-local syntax-propertize-function #'reason-syntax-propertize-function)
+  (setq-local syntax-propertize-function #'rescript-syntax-propertize-function)
   ;; Indentation
-  (setq-local indent-line-function 'reason-mode-indent-line)
+  (setq-local indent-line-function 'rescript-mode-indent-line)
   ;; Fonts
-  (setq-local font-lock-defaults '(reason-font-lock-keywords))
+  (setq-local font-lock-defaults '(rescript-font-lock-keywords))
   ;; Misc
   (setq-local comment-start "/* ")
   (setq-local comment-end   " */")
@@ -228,22 +228,22 @@ Argument END marks the end of the function."
   (setq-local normal-auto-fill-function nil)
   (setq-local comment-multi-line t)
 
-  (setq-local beginning-of-defun-function 'reason-beginning-of-defun)
-  (setq-local end-of-defun-function 'reason-end-of-defun)
+  (setq-local beginning-of-defun-function 'rescript-beginning-of-defun)
+  (setq-local end-of-defun-function 'rescript-end-of-defun)
   (setq-local parse-sexp-lookup-properties t))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.\\(resi?\\|rei?\\)$" . reason-mode))
+(add-to-list 'auto-mode-alist '("\\.\\(resi?\\|rei?\\)$" . rescript-mode))
 
-(defun reason-mode-reload ()
+(defun rescript-mode-reload ()
   "Reload Reason mode."
   (interactive)
-  (unload-feature 'reason-mode)
-  (unload-feature 'reason-indent)
-  (unload-feature 'reason-interaction)
-  (require 'reason-mode)
-  (reason-mode))
+  (unload-feature 'rescript-mode)
+  (unload-feature 'rescript-indent)
+  (unload-feature 'rescript-interaction)
+  (require 'rescript-mode)
+  (rescript-mode))
 
-(provide 'reason-mode)
+(provide 'rescript-mode)
 
-;;; reason-mode.el ends here
+;;; rescript-mode.el ends here

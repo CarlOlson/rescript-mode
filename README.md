@@ -1,13 +1,13 @@
-# reason-mode
-![Build Status](https://travis-ci.org/reasonml-editor/reason-mode.svg?branch=master)
+# rescript-mode
+![Build Status](https://travis-ci.org/rescriptml-editor/rescript-mode.svg?branch=master)
 
-An Emacs major mode for [ReasonML](https://reasonml.github.io/).
+An Emacs major mode for [ReasonML](https://rescriptml.github.io/).
 
 ## Installation
 
 ### Prerequisites
 
-**Note**: the following setup assumes Reason and Merlin are installed. This can be achieved by by installing them from OPAM (`opam install reason merlin`). 
+**Note**: the following setup assumes Reason and Merlin are installed. This can be achieved by by installing them from OPAM (`opam install rescript merlin`). 
 
 If you are using bucklescript, make sure you are using a compatible OCaml version (you can find the version of ocaml compatible with your bucklescript installation by running `npm bsc -version`).
 At the time of writing this documentation, install OCaml 4.06.1 (for bucklescript 7.\*)
@@ -17,23 +17,23 @@ At the time of writing this documentation, install OCaml 4.06.1 (for bucklescrip
 ```sh
 ocamlc -version # 4.06.1 if you are using bucklescript
 which ocamlmerlin # a valid path to the ocamlmerlin binary, mandatorily
-which ocamlmerlin-reason # a valid path to the ocamlmerlin-reason binary, mandatorily
+which ocamlmerlin-rescript # a valid path to the ocamlmerlin-rescript binary, mandatorily
 ```
 
 ### MELPA
 
-If your Emacs has `package.el` (which is automatically the case for Emacs >= 24), you can install `reason-mode` from the package in [MELPA](https://melpa.org/#/getting-started).
+If your Emacs has `package.el` (which is automatically the case for Emacs >= 24), you can install `rescript-mode` from the package in [MELPA](https://melpa.org/#/getting-started).
 
 ### QUELPA
 Alternatively, you can use [quelpa](https://github.com/quelpa/quelpa) and the following recipe:
 
 ```lisp
-(quelpa '(reason-mode :repo "reasonml-editor/reason-mode" :fetcher github :stable t))
+(quelpa '(rescript-mode :repo "rescriptml-editor/rescript-mode" :fetcher github :stable t))
 ```
 
 ### Manual Installation
 
-Download `reason-indent.el`, `reason-interaction.el`, `reason-mode.el` and `refmt.el` at the root of this repository and place it in a `vendor` file next to your Emacs configuration files. Then place the following somewhere in your `.emacs.el`:
+Download `rescript-indent.el`, `rescript-interaction.el`, `rescript-mode.el` and `refmt.el` at the root of this repository and place it in a `vendor` file next to your Emacs configuration files. Then place the following somewhere in your `.emacs.el`:
 
 ```lisp
 (add-to-list 'load-path "/path/to/vendor")
@@ -52,15 +52,15 @@ Add the following to your `~/.emacs` or `~/.emacs.d/init.el` file:
    an error"
   (car (ignore-errors (apply 'process-lines (split-string cmd)))))
 
-(defun reason-cmd-where (cmd)
+(defun rescript-cmd-where (cmd)
   (let ((where (shell-cmd cmd)))
     (if (not (string-equal "unknown flag ----where" where))
       where)))
 
-(let* ((refmt-bin (or (reason-cmd-where "refmt ----where")
+(let* ((refmt-bin (or (rescript-cmd-where "refmt ----where")
                       (shell-cmd "which refmt")
                       (shell-cmd "which bsrefmt")))
-       (merlin-bin (or (reason-cmd-where "ocamlmerlin ----where")
+       (merlin-bin (or (rescript-cmd-where "ocamlmerlin ----where")
                        (shell-cmd "which ocamlmerlin")))
        (merlin-base-dir (when merlin-bin
                           (replace-regexp-in-string "bin/ocamlmerlin$" "" merlin-bin))))
@@ -72,9 +72,9 @@ Add the following to your `~/.emacs` or `~/.emacs.d/init.el` file:
   (when refmt-bin
     (setq refmt-command refmt-bin)))
 
-(require 'reason-mode)
+(require 'rescript-mode)
 (require 'merlin)
-(add-hook 'reason-mode-hook (lambda ()
+(add-hook 'rescript-mode-hook (lambda ()
                               (add-hook 'before-save-hook 'refmt-before-save)
                               (merlin-mode)))
 
@@ -94,7 +94,7 @@ If you have iedit mode set up:
 
 (Thanks @sgrove: [https://gist.github.com/sgrove/c9bdfed77f4da8db108dfb2c188f7baf](https://gist.github.com/sgrove/c9bdfed77f4da8db108dfb2c188f7baf))
 
-This associates `reason-mode` with `.re` and `.rei` files. To enable it explicitly, do <kbd>M-x reason-mode</kbd>.
+This associates `rescript-mode` with `.re` and `.rei` files. To enable it explicitly, do <kbd>M-x rescript-mode</kbd>.
 
 ### Project specific version of `refmt`
 
@@ -118,26 +118,26 @@ Then in your Emacs init file add:
 ```lisp
 (require 'utop)
 (setq utop-command "opam config exec -- rtop -emacs")
-(add-hook 'reason-mode-hook #'utop-minor-mode) ;; can be included in the hook above as well
+(add-hook 'rescript-mode-hook #'utop-minor-mode) ;; can be included in the hook above as well
 ```
 
 After this, the function `utop` (`C-c C-s`) will start `rtop` in Reason buffers.
 
 ### Spacemacs
 
-The [`reasonml`](https://develop.spacemacs.org/layers/+lang/reasonml/README.html) layer is available in the develop version of spacemacs.
+The [`rescriptml`](https://develop.spacemacs.org/layers/+lang/rescriptml/README.html) layer is available in the develop version of spacemacs.
 
 
-For the stable version of spacemacs, you can install the `reason-mode` package automatically.
+For the stable version of spacemacs, you can install the `rescript-mode` package automatically.
 
 ```lisp
 dotspacemacs-additional-packages
   '(
-    (reason-mode
+    (rescript-mode
       :location (recipe
-        :repo "reasonml-editor/reason-mode"
+        :repo "rescriptml-editor/rescript-mode"
         :fetcher github
-        :files ("reason-mode.el" "refmt.el" "reason-indent.el" "reason-interaction.el")))
+        :files ("rescript-mode.el" "refmt.el" "rescript-indent.el" "rescript-interaction.el")))
 )
 ```
 
@@ -151,7 +151,7 @@ If you have refmt installed, you can add this to your `.emacs` file to enable
 auto-format:
 
 ```lisp
-(add-hook 'reason-mode-hook (lambda ()
+(add-hook 'rescript-mode-hook (lambda ()
           (add-hook 'before-save-hook #'refmt-before-save)))
 ```
 
@@ -170,7 +170,7 @@ The environment variable EMACS controls the program that runs emacs.
 
 ## License
 
-`reason-mode` is distributed under the terms of both the MIT license and the
+`rescript-mode` is distributed under the terms of both the MIT license and the
 Apache License (Version 2.0).
 
 See [LICENSE-MIT](LICENSE-MIT) and [LICENSE-APACHE](LICENSE-APACHE) for details.
