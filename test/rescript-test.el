@@ -11,7 +11,7 @@
 
 (require 'ert-x)
 (require 'rescript-mode)
-(require 'cl)
+(require 'cl-lib)
 
 (setq rescript-test-fill-column 32)
 
@@ -30,15 +30,17 @@
      `(goto-char ,point-pos)
      'expected `(insert ,expected)
      'got `(insert ,got)
-     (loop for i from 0 to (max (length original) (length expected))
-           for oi = (if (< i (length got)) (elt got i))
-           for ei = (if (< i (length expected)) (elt expected i))
-           while (equal oi ei)
-           finally return `(first-difference-at
-                            (goto-char ,(+ 1 i))
-                            expected ,(char-to-string ei)
-                            got ,(char-to-string oi))))))
-(put 'rescript-compare-code-after-manip 'ert-explainer
+     (cl-loop for i from 0 to (max (length original) (length expected))
+              for oi = (if (< i (length got)) (elt got i))
+              for ei = (if (< i (length expected)) (elt expected i))
+              while (equal oi ei)
+              finally return `(first-difference-at
+                               (goto-char ,(+ 1 i))
+                               expected ,(char-to-string ei)
+                               got ,(char-to-string oi))))))
+
+(put 'rescript-compare-code-after-manip
+     'ert-explainer
      'rescript-test-explain-bad-manip)
 
 (defun rescript-test-manip-code (original point-pos manip-func expected)
@@ -64,8 +66,7 @@
 
 
 (ert-deftest indent-struct-fields-aligned ()
-  (test-indent
-   "
+  (test-indent "
 type foo { bar: int,
            baz: int};
 
@@ -90,8 +91,7 @@ type blah {x:int,
 ;; }"))
 
 (ert-deftest indent-top-level ()
-  (test-indent
-   "
+  (test-indent "
 /* Everything here is at the top level and should not be indented*/
 let greeting = \"hello!\";
 let score = 10;
@@ -100,8 +100,7 @@ let newScore = 10 + score;
 
 ;; TODO how to align these
 (ert-deftest indent-params-no-align ()
-  (test-indent
-   "
+  (test-indent "
 /* Indent out one level because no params appear on the first line */
 fun xyzzy(
   a:int,
@@ -115,16 +114,14 @@ fun abcdef(
 "))
 
 (ert-deftest indent-params-align1 ()
-  (test-indent
-   "
+  (test-indent "
 /* Align the second line of params to the first */
 fun foo(a:int,
         b:char) => {};
 "))
 
 (ert-deftest indent-params-align2 ()
-  (test-indent
-   "
+  (test-indent "
 /* Align the second line of params to the first */
 fun foo2(   a:int,
             b:char)
@@ -133,8 +130,7 @@ fun foo2(   a:int,
 "))
 
 (ert-deftest indent-params-align3 ()
-  (test-indent
-   "
+  (test-indent "
 /* Align the second line of params to the first */
 fun foo3(   a:int,  /* should work with a comment here */
             b:char)
@@ -143,8 +139,7 @@ fun foo3(   a:int,  /* should work with a comment here */
 "))
 
 (ert-deftest indent-open-after-arrow1 ()
-  (test-indent
-   "
+  (test-indent "
 /* Indent function body only one level after `=> {` */
 fun foo1(a:int) (b:char) :int => {
   let body = \"hello\";
@@ -153,8 +148,7 @@ fun foo1(a:int) (b:char) :int => {
 "))
 
 (ert-deftest indent-open-after-arrow2 ()
-  (test-indent
-   "
+  (test-indent "
 /* Indent function body only one level after `=> {` */
 fun foo2 (a:int)
          (b:char) :int => {
@@ -164,8 +158,7 @@ fun foo2 (a:int)
 "))
 
 (ert-deftest indent-open-after-arrow3 ()
-  (test-indent
-   "
+  (test-indent "
 /* Indent function body only one level after `=> {` */
 fun foo3(a:int,
          b:char)
@@ -176,8 +169,7 @@ fun foo3(a:int,
 "))
 
 (ert-deftest indent-square-bracket-alignment ()
-  (test-indent
-   "
+  (test-indent "
 fun args_on_the_next_line( /* with a comment */
                               a:int,
                               b:String) => {
@@ -206,8 +198,7 @@ fun args_on_the_next_line( /* with a comment */
 ;; "))
 
 (ert-deftest indent-switch ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   switch blah {
   | Pattern => stuff()
@@ -217,8 +208,7 @@ fun foo() => {
 "))
 
 (ert-deftest indent-if ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   if (blah) {
     stuff
@@ -228,8 +218,7 @@ fun foo() => {
 }"))
 
 (ert-deftest indent-switch-multiline-pattern ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   switch blah {
   | Pattern => \"dada\"
@@ -242,8 +231,7 @@ fun foo() => {
 "))
 
 (ert-deftest indent-normal-switch ()
-  (test-indent
-   "
+  (test-indent "
 let hasExactlyTwoCars lst =>
   switch lst {
   | NoMore => false                              /* 0 */
@@ -254,8 +242,7 @@ let hasExactlyTwoCars lst =>
 "))
 
 (ert-deftest indent-indented-switch ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   let x = {
     switch blah {
@@ -271,8 +258,7 @@ fun foo() => {
 "))
 
 (ert-deftest indent-indented-object-func ()
-  (test-indent
-"
+  (test-indent "
 module MyApp = {
   type state = {db:db};
   type action = Click;
@@ -293,8 +279,7 @@ module MyApp = {
 "))
 
 (ert-deftest indented-multi-expr-switch ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   let x = {
     switch blah {
@@ -311,8 +296,7 @@ fun foo() => {
 
 ;; Make sure that in effort to cover switch patterns we don't mistreat || or expressions
 (ert-deftest indent-nonswitch-or-expression ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   let x = foo() ||
     bar();
@@ -322,8 +306,7 @@ fun foo() => {
 ;; Closing braces in single char literals and strings should not confuse the indentation
 ;; TODO In Reason it does confuse indentation
 (ert-deftest indent-closing-braces-in-char-literals ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   bar('}');
   bar(']');
@@ -332,8 +315,7 @@ fun foo() => {
 "))
 
 (ert-deftest indent-jsx ()
-  (test-indent
-   "
+  (test-indent "
 fun foo() => {
   <div attr=\"bar\">
     <img src=\"foo.png\"/>
@@ -342,8 +324,7 @@ fun foo() => {
 "))
 
 (ert-deftest indent-jsx-2 ()
-  (test-indent
-   "
+  (test-indent "
 let make keyInfo::k=? _children => {
   ...component,
   render: fun _ =>
@@ -360,8 +341,7 @@ let make keyInfo::k=? _children => {
 "))
 
 (ert-deftest indent-jsx-3 ()
-  (test-indent
-   "
+  (test-indent "
 let make = (_children) => {
   ...component,
   render: self => {
@@ -378,8 +358,7 @@ let make = (_children) => {
 "))
 
 (ert-deftest indent-jsx-4 ()
-  (test-indent
-   "
+  (test-indent "
 let make = (name, children) => {
   ...component,
   render: self =>
@@ -417,14 +396,14 @@ Convert the line-column information from that list into a buffer position value.
 (defun rescript-test-group-str-by-face (str)
   "Fontify `STR' in rescript-mode and group it by face, returning a
 list of substrings of `STR' each followed by its face."
-  (loop with fontified = (rescript-test-fontify-string str)
-        for start = 0 then end
-        while start
-        for end   = (next-single-property-change start 'face fontified)
-        for prop  = (get-text-property start 'face fontified)
-        for text  = (substring-no-properties fontified start end)
-        if prop
-        append (list text prop)))
+  (cl-loop with fontified = (rescript-test-fontify-string str)
+           for start = 0 then end
+           while start
+           for end   = (next-single-property-change start 'face fontified)
+           for prop  = (get-text-property start 'face fontified)
+           for text  = (substring-no-properties fontified start end)
+           if prop
+           append (list text prop)))
 
 (defun rescript-test-font-lock (source face-groups)
   "Test that `SOURCE' fontifies to the expected `FACE-GROUPS'"
