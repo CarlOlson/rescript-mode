@@ -1,9 +1,9 @@
-;;; rescript-mode.el --- A major mode for editing ReasonML -*-lexical-binding: t-*-
+;;; rescript-mode.el --- A major mode for editing ReScript -*-lexical-binding: t-*-
 ;; Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
 ;; Version: 0.4.0
 ;; Author: Mozilla
-;; Url: https://github.com/rescriptml-editor/rescript-mode
+;; Url: https://github.com/reasonml-editor/reason-mode
 ;; Keywords: languages, ocaml
 ;; Package-Requires: ((emacs "24.3"))
 
@@ -13,10 +13,8 @@
 ;; Apache License (version 2.0).
 
 ;;; Commentary:
-;; This project provides useful functions and helpers for developing code
-;; using the Reason programming language (https://facebook.github.io/rescript).
-;;
-;; Reason is an umbrella project that provides a curated layer for OCaml.
+;; This project provides useful functions and helpers for developing
+;; code using the ReScript programming language.
 ;;
 ;; It offers:
 ;;  - A new, familiar syntax for the battle-tested language that is OCaml.
@@ -61,7 +59,7 @@
     table))
 
 (defgroup rescript nil
-  "Support for Reason code."
+  "Support for ReScript code."
   :link '(url-link "http://facebook.github.io/rescript/")
   :group 'languages)
 
@@ -110,7 +108,7 @@ See rust-mode PR #42.
 Argument WORDS argument to pass to `regexp-opt`."
   (concat "\\_<" (regexp-opt words t) "\\_>"))
 
-;;; Syntax highlighting for Reason
+;;; Syntax highlighting for ReScript
 (defvar rescript-font-lock-keywords
   `((,(rescript-regexp-opt-symbols rescript-mode-keywords) . font-lock-keyword-face)
     (,(rescript-regexp-opt-symbols rescript-special-types) . font-lock-builtin-face)
@@ -151,7 +149,7 @@ Argument WORDS argument to pass to `regexp-opt`."
           (rescript-mode-try-find-alternate-file mod-name ".rei")))))))
 
 (defun rescript-syntax-propertize-function (start end)
-  "Propertize Reason function.
+  "Propertize ReScript function.
 Argument START marks the beginning of the function.
 Argument END marks the end of the function."
   (goto-char start)
@@ -168,8 +166,8 @@ Argument END marks the end of the function."
     map))
 
 ;;;###autoload
-(define-derived-mode rescript-mode prog-mode "Reason"
-  "Major mode for Reason code.
+(define-derived-mode rescript-mode prog-mode "ReScript"
+  "Major mode for ReScript code.
 
 \\{rescript-mode-map}"
   :group 'rescript
@@ -203,7 +201,7 @@ Argument END marks the end of the function."
 (add-to-list 'auto-mode-alist '("\\.resi?$" . rescript-mode))
 
 (defun rescript-mode-reload ()
-  "Reload Reason mode."
+  "Reload ReScript mode."
   (interactive)
   (unload-feature 'rescript-mode)
   (unload-feature 'rescript-indent)

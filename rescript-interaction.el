@@ -6,7 +6,7 @@
 
 ;; Phrase navigation for utop and maybe other REPLs.
 
-;; The utop compatibility layer for Reason was mainly taken from:
+;; The utop compatibility layer for ReScript was mainly taken from:
 ;; https://github.com/ocaml/tuareg/blob/master/tuareg-light.el (big thanks!)
 
 ;;; Code:
@@ -28,7 +28,7 @@ STEP parameter for jumping back more than one character."
     (goto-char (1+ (point)))))
 
 (defun rescript-in-literal-p ()
-  "Return non-nil if point is inside an Reason literal."
+  "Return non-nil if point is inside an ReScript literal."
   (nth 3 (syntax-ppss)))
 
 (defconst rescript-comment-delimiter-regexp "\\*/\\|/\\*"
@@ -76,7 +76,7 @@ where | is point)."
        (char-equal ?\; (following-char))))
 
 (defun rescript-skip-to-close-delimiter (&optional limit)
-  "Skip to the end of a Reason block.
+  "Skip to the end of a ReScript block.
 It basically calls `re-search-forward` in order to go to any
 closing delimiter, not concerning itself with balancing of any
 sort.  Client code needs to check that.
@@ -84,7 +84,7 @@ LIMIT is passed to `re-search-forward` directly."
   (re-search-forward "\\s)" limit 'move))
 
 (defun rescript-skip-back-to-open-delimiter (&optional limit)
-  "Skip to the beginning of a Reason block backwards.
+  "Skip to the beginning of a ReScript block backwards.
 It basically calls `re-search-backward` in order to go to any
 opening delimiter, not concerning itself with balancing of any
 sort.  Client code needs to check that.
@@ -170,7 +170,7 @@ phrease cannot be found."
   (point))
 
 (defun rescript-discover-phrase ()
-  "Discover a Reason phrase in the buffer."
+  "Discover a ReScript phrase in the buffer."
   ;; TODO rescript-with-internal-syntax ;; tuareg2 modifies the syntax table (removed for now)
   ;; TODO stop-at-and feature for phrase detection (do we need it?)
   ;; TODO tuareg2 has some custom logic for module and class (do we need it?)
@@ -184,7 +184,7 @@ phrease cannot be found."
               (point))))))
 
 (defun rescript-discover-phrase-debug ()
-  "Discover a Reason phrase in the buffer (debug mode)."
+  "Discover a ReScript phrase in the buffer (debug mode)."
   (let ((triple (rescript-discover-phrase)))
     (message (concat "Evaluating: \"" (rescript-fetch-phrase triple) "\""))
     triple))

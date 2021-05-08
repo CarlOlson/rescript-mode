@@ -1,13 +1,20 @@
 # rescript-mode
-![Build Status](https://travis-ci.org/rescriptml-editor/rescript-mode.svg?branch=master)
 
-An Emacs major mode for [ReasonML](https://rescriptml.github.io/).
+An Emacs major mode for [ReScript](https://rescript-lang.org/).
+
+This is based off of
+[reason-mode](https://github.com/reasonml-editor/reason-mode).
+Support for ReasonML has been removed.  This repo will only target
+ReScript v9 and be tested against Emacs 27.
+
+The following docs are being removed/replaced, they can be ignored.
+`rescript-mode` can be installed like any other Emacs mode.
 
 ## Installation
 
 ### Prerequisites
 
-**Note**: the following setup assumes Reason and Merlin are installed. This can be achieved by by installing them from OPAM (`opam install rescript merlin`). 
+**Note**: the following setup assumes ReScript and Merlin are installed. This can be achieved by by installing them from OPAM (`opam install rescript merlin`).
 
 If you are using bucklescript, make sure you are using a compatible OCaml version (you can find the version of ocaml compatible with your bucklescript installation by running `npm bsc -version`).
 At the time of writing this documentation, install OCaml 4.06.1 (for bucklescript 7.\*)
@@ -18,17 +25,6 @@ At the time of writing this documentation, install OCaml 4.06.1 (for bucklescrip
 ocamlc -version # 4.06.1 if you are using bucklescript
 which ocamlmerlin # a valid path to the ocamlmerlin binary, mandatorily
 which ocamlmerlin-rescript # a valid path to the ocamlmerlin-rescript binary, mandatorily
-```
-
-### MELPA
-
-If your Emacs has `package.el` (which is automatically the case for Emacs >= 24), you can install `rescript-mode` from the package in [MELPA](https://melpa.org/#/getting-started).
-
-### QUELPA
-Alternatively, you can use [quelpa](https://github.com/quelpa/quelpa) and the following recipe:
-
-```lisp
-(quelpa '(rescript-mode :repo "rescriptml-editor/rescript-mode" :fetcher github :stable t))
 ```
 
 ### Manual Installation
@@ -44,7 +40,7 @@ Add the following to your `~/.emacs` or `~/.emacs.d/init.el` file:
 
 ```elisp
 ;;----------------------------------------------------------------------------
-;; Reason setup
+;; ReScript setup
 ;;----------------------------------------------------------------------------
 
 (defun shell-cmd (cmd)
@@ -94,54 +90,18 @@ If you have iedit mode set up:
 
 (Thanks @sgrove: [https://gist.github.com/sgrove/c9bdfed77f4da8db108dfb2c188f7baf](https://gist.github.com/sgrove/c9bdfed77f4da8db108dfb2c188f7baf))
 
-This associates `rescript-mode` with `.re` and `.rei` files. To enable it explicitly, do <kbd>M-x rescript-mode</kbd>.
+This associates `rescript-mode` with `.res` and `.resi` files. To enable it explicitly, do <kbd>M-x rescript-mode</kbd>.
 
 ### Project specific version of `refmt`
 
 If you're using different versions of `refmt` between projects, you can use the project-specific installed version via the special config values:
-- `'npm` (calls `npx refmt ...` to use the version of `refmt` installed in the project's `node_modules`) 
+- `'npm` (calls `npx refmt ...` to use the version of `refmt` installed in the project's `node_modules`)
 - `'opam` (calls `opam exec -- refmt ...` to use the version of `refmt` on the current `opam` switch):
 
 ```lisp
 ;; can also be set via M-x `customize-mode`
 (setq refmt-command 'npm)
 ```
-
-### Utop
-
-Reason-mode provides (opt-in) `rtop` support. At the moment only the native workflow is supported.
-
-First of all you need to install the [Utop Emacs integration](https://github.com/diml/utop#integration-with-emacs). Make sure it is latest `master` because the feature is fairly new.
-
-Then in your Emacs init file add:
-
-```lisp
-(require 'utop)
-(setq utop-command "opam config exec -- rtop -emacs")
-(add-hook 'rescript-mode-hook #'utop-minor-mode) ;; can be included in the hook above as well
-```
-
-After this, the function `utop` (`C-c C-s`) will start `rtop` in Reason buffers.
-
-### Spacemacs
-
-The [`rescriptml`](https://develop.spacemacs.org/layers/+lang/rescriptml/README.html) layer is available in the develop version of spacemacs.
-
-
-For the stable version of spacemacs, you can install the `rescript-mode` package automatically.
-
-```lisp
-dotspacemacs-additional-packages
-  '(
-    (rescript-mode
-      :location (recipe
-        :repo "rescriptml-editor/rescript-mode"
-        :fetcher github
-        :files ("rescript-mode.el" "refmt.el" "rescript-indent.el" "rescript-interaction.el")))
-)
-```
-
-Afterwards add the [snippet](#manual-installation) to your `dotspacemacs/user-config`.
 
 ### Features
 

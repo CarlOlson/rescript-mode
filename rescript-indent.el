@@ -1,17 +1,17 @@
-;;; rescript-indent.el --- Indentation functions for ReasonML -*-lexical-binding: t-*-
+;;; rescript-indent.el --- Indentation functions for ReScript -*-lexical-binding: t-*-
 
 ;; Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
 ;;; Commentary:
 
-;; Indentation functions for Reason.
+;; Indentation functions for ReScript.
 
 ;;; Code:
 
 (defconst rescript-re-ident "[[:word:][:multibyte:]_][[:word:][:multibyte:]_[:digit:]]*")
 
 (defcustom rescript-indent-offset 2
-  "Indent Reason code by this number of spaces."
+  "Indent ReScript code by this number of spaces."
   :type 'integer
   :group 'rescript-mode
   :safe #'integerp)
@@ -106,7 +106,7 @@ Negative argument -N means move back to Nth preceding end of defun.
 Assume that this is called after ‘beginning-of-defun’.  So point is
 at the beginning of the defun body.
 
-This is written mainly to be used as `end-of-defun-function' for Reason."
+This is written mainly to be used as `end-of-defun-function' for ReScript."
   (interactive)
   ;; Find the opening brace
   (if (re-search-forward "[{]" nil t)

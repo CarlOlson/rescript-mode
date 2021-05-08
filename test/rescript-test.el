@@ -25,7 +25,7 @@
      ;; The (goto-char) and (insert) business here is just for
      ;; convenience--after an error, you can copy-paste that into emacs eval to
      ;; insert the bare strings into a buffer
-     "Reason code was manipulated wrong after:"
+     "ReScript code was manipulated wrong after:"
      `(insert ,original)
      `(goto-char ,point-pos)
      'expected `(insert ,expected)
@@ -245,13 +245,13 @@ fun foo() => {
 module MyApp = {
   type state = {db:db};
   type action = Click;
-  let component = ReasonReact.reducerComponent(\"MyApp\");
+  let component = ReScriptReact.reducerComponent(\"MyApp\");
   let make = (_children) => {
     ...component,
     initialState: () => {db:[||]},
     reducer: (a: action, s:state) =>
       switch(a) {
-      | Click => ReasonReact.Update(s)
+      | Click => ReScriptReact.Update(s)
       },
     render: _self => {
       let a = 20;
@@ -287,7 +287,7 @@ fun foo() => {
 "))
 
 ;; Closing braces in single char literals and strings should not confuse the indentation
-;; TODO In Reason it does confuse indentation
+;; TODO In ReScript it does confuse indentation
 (ert-deftest indent-closing-braces-in-char-literals ()
   (test-indent "
 fun foo() => {
