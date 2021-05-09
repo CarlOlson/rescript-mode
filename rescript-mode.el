@@ -59,7 +59,7 @@
 
 (defgroup rescript nil
   "Support for ReScript code."
-  :link '(url-link "http://facebook.github.io/rescript/")
+  :link '(url-link "https://rescript-lang.org/")
   :group 'languages)
 
 (defcustom rescript-mode-hook nil
