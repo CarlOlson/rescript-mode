@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/usr/bin/env bash
 # Copyright 2014 The Rust Project Developers. See the COPYRIGHT
 # file at the top-level directory of this distribution and at
 # http://rust-lang.org/COPYRIGHT.
@@ -18,8 +18,8 @@ if [ -z "$EMACS" ]; then
 fi
 
 $EMACS --batch || {
-   echo "You must set EMACS to a program that runs emacs."
-   exit 1
+    echo "You must set EMACS to a program that runs emacs."
+    exit 1
 }
 
 $( $EMACS -batch > /dev/null 2>&1 ) || {
@@ -48,6 +48,11 @@ fi
 
 TEST_INCLUDES=$(ls test/*.el | sed -e 's/^/-l /' | xargs)
 
-# Note that the order of the -l counts, rescript-mode.el goes before the test
-# .el files.
-$EMACS -batch -l ert $DEPS_INCLUDES -l rescript-mode.el $TEST_INCLUDES -f ert-run-tests-batch-and-exit
+if [ -n "$1" ]; then
+    export ERT_SELECTOR="$1"
+    $EMACS -batch -l ert $DEPS_INCLUDES -l rescript-mode.el $TEST_INCLUDES \
+           -eval '(ert-run-tests-batch-and-exit (getenv "ERT_SELECTOR"))'
+else
+    $EMACS -batch -l ert $DEPS_INCLUDES -l rescript-mode.el $TEST_INCLUDES \
+           -f ert-run-tests-batch-and-exit
+fi

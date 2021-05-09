@@ -23,13 +23,22 @@ The `test` folder contains tests that can be run via
 is the first time run:
 
 ```
+# First time setup
 cask install
-cask exec ./run_tests.sh
-```
 
-If it is not the first time you can omit the first line and execute
-the tests with the second one only.  The environment variable EMACS
-controls the program that runs emacs.
+# Run all tests
+cask exec ./run_tests.sh
+
+# With verbose messages
+DEBUG=t cask exec ./run_tests.sh
+
+# Or run only one test
+cask exec ./run_tests.sh <test-selector>
+DEBUG=t cask exec ./run_tests.sh <test-selector>
+
+# However, you probably don't need Cask:
+./run_tests.sh
+```
 
 ## License
 

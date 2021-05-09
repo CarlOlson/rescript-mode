@@ -13,35 +13,13 @@
 (require 'rescript-mode)
 (require 'cl-lib)
 
-(setq rescript-test-fill-column 32)
+(setq ert-quiet (if (getenv "DEBUG") nil t))
 
 (defun rescript-compare-code-after-manip (original point-pos manip-func expected got)
   (equal expected got))
 
-(defun rescript-test-explain-bad-manip (original point-pos manip-func expected got)
-  (if (equal expected got)
-      nil
-    (list
-     ;; The (goto-char) and (insert) business here is just for
-     ;; convenience--after an error, you can copy-paste that into emacs eval to
-     ;; insert the bare strings into a buffer
-     "ReScript code was manipulated wrong after:"
-     `(insert ,original)
-     `(goto-char ,point-pos)
-     'expected `(insert ,expected)
-     'got `(insert ,got)
-     (cl-loop for i from 0 to (max (length original) (length expected))
-              for oi = (if (< i (length got)) (elt got i))
-              for ei = (if (< i (length expected)) (elt expected i))
-              while (equal oi ei)
-              finally return `(first-difference-at
-                               (goto-char ,(+ 1 i))
-                               expected ,(char-to-string ei)
-                               got ,(char-to-string oi))))))
-
-(put 'rescript-compare-code-after-manip
-     'ert-explainer
-     'rescript-test-explain-bad-manip)
+(defun buffer-string-no-properties ()
+  (buffer-substring-no-properties (point-min) (point-max)))
 
 (defun rescript-test-manip-code (original point-pos manip-func expected)
   (with-temp-buffer
@@ -50,10 +28,11 @@
     (goto-char point-pos)
     (funcall manip-func)
     (should (rescript-compare-code-after-manip
-             original point-pos manip-func expected (buffer-string)))))
+             original point-pos manip-func expected (buffer-string-no-properties)))))
 
 (defun test-indent (indented &optional deindented)
-  (let ((deindented (or deindented (replace-regexp-in-string "^[[:blank:]]*" "      " indented))))
+  (let ((inhibit-message (if (getenv "DEBUG") nil t))
+        (deindented (or deindented (replace-regexp-in-string "^[[:blank:]]*" "      " indented))))
     (rescript-test-manip-code
      deindented
      1
@@ -85,46 +64,35 @@ let newScore = 10 + score;
 (ert-deftest indent-params-no-align ()
   (test-indent "
 /* Indent out one level because no params appear on the first line */
-fun xyzzy(
+let xyzzy = (
   a:int,
   b:char) => {};
 
-fun abcdef(
+let abcdef = (
   a:int,
-  b:char)
-  :int =>
-  { 1 };
+  b:char):int => {
+  1
+};
 "))
 
 (ert-deftest indent-params-align1 ()
   (test-indent "
 /* Align the second line of params to the first */
-fun foo(a:int,
-        b:char) => {};
+let foo = (a:int,
+           b:char) => {};
 "))
 
 (ert-deftest indent-params-align2 ()
   (test-indent "
 /* Align the second line of params to the first */
-fun foo2(   a:int,
-            b:char)
-            :int =>
-  { 1 };
-"))
-
-(ert-deftest indent-params-align3 ()
-  (test-indent "
-/* Align the second line of params to the first */
-fun foo3(   a:int,  /* should work with a comment here */
-            b:char)
-            :int =>
-  { 1 };
+let foo3 = (   a:int,  /* should work with a comment here */
+               b:char):int => {};
 "))
 
 (ert-deftest indent-open-after-arrow1 ()
   (test-indent "
 /* Indent function body only one level after `=> {` */
-fun foo1(a:int) (b:char) :int => {
+let foo1 = (a:int, b:char): int => {
   let body = \"hello\";
   1
 };
@@ -133,19 +101,8 @@ fun foo1(a:int) (b:char) :int => {
 (ert-deftest indent-open-after-arrow2 ()
   (test-indent "
 /* Indent function body only one level after `=> {` */
-fun foo2 (a:int)
-         (b:char) :int => {
-  let body = \"hello\";
-  1
-};
-"))
-
-(ert-deftest indent-open-after-arrow3 ()
-  (test-indent "
-/* Indent function body only one level after `=> {` */
-fun foo3(a:int,
-         b:char)
-        :int => {
+let foo2 (a:int,
+          b:char): int => {
   let body = \"hello\";
   1
 };
@@ -153,9 +110,7 @@ fun foo3(a:int,
 
 (ert-deftest indent-square-bracket-alignment ()
   (test-indent "
-fun args_on_the_next_line( /* with a comment */
-                              a:int,
-                              b:String) => {
+let args_on_the_next_line = (a:int, b:String) => {
   let aaaaaa = [
     1,
     2,
@@ -167,22 +122,9 @@ fun args_on_the_next_line( /* with a comment */
 };
 "))
 
-;; TODO: uncomment
-;; TODO fix alignment of curly braces when down a line
-;; (ert-deftest indent-multi-line-expr ()
-;;   (test-indent
-;;    "
-;; fun foo() =>
-;;   {
-;;     x();
-;;     let a =
-;;       b()
-;;   };
-;; "))
-
 (ert-deftest indent-switch ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   switch blah {
   | Pattern => stuff()
   | _ => whatever
@@ -192,7 +134,7 @@ fun foo() => {
 
 (ert-deftest indent-if ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   if (blah) {
     stuff
   } else {
@@ -202,7 +144,7 @@ fun foo() => {
 
 (ert-deftest indent-switch-multiline-pattern ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   switch blah {
   | Pattern => \"dada\"
   | Pattern2 => {
@@ -226,7 +168,7 @@ let hasExactlyTwoCars lst =>
 
 (ert-deftest indent-indented-switch ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   let x = {
     switch blah {
     | Pattern => \"dada\"
@@ -263,7 +205,7 @@ module MyApp = {
 
 (ert-deftest indented-multi-expr-switch ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   let x = {
     switch blah {
     | Pattern => \"dada\"
@@ -280,17 +222,16 @@ fun foo() => {
 ;; Make sure that in effort to cover switch patterns we don't mistreat || or expressions
 (ert-deftest indent-nonswitch-or-expression ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   let x = foo() ||
     bar();
 };
 "))
 
 ;; Closing braces in single char literals and strings should not confuse the indentation
-;; TODO In ReScript it does confuse indentation
 (ert-deftest indent-closing-braces-in-char-literals ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   bar('}');
   bar(']');
   bar(')');
@@ -299,7 +240,7 @@ fun foo() => {
 
 (ert-deftest indent-jsx ()
   (test-indent "
-fun foo() => {
+let foo = () => {
   <div attr=\"bar\">
     <img src=\"foo.png\"/>
   </div>
@@ -308,49 +249,43 @@ fun foo() => {
 
 (ert-deftest indent-jsx-2 ()
   (test-indent "
-let make keyInfo::k=? _children => {
-  ...component,
-  render: fun _ =>
-    <div className=\"App\">
-      <div className=\"header\">
-        <h2> foobar </h2>
-        <h3> bar baz quz </h3>
-      </div>
-      <div className=\"footer\">
-        <p> more here </p>
-      </div>
+@react.component
+let make = () => {
+  <div className=\"App\">
+    <div className=\"header\">
+      <h2> foobar </h2>
+      <h3> bar baz quz </h3>
     </div>
+    <div className=\"footer\">
+      <p> more here </p>
+    </div>
+  </div>
 };
 "))
 
 (ert-deftest indent-jsx-3 ()
   (test-indent "
-let make = (_children) => {
-  ...component,
-  render: self => {
-    let name = \"foo\";
-    let children = List.map(el => <Text value=el />, [\"foo\", \"bar\"]);
+let make = () => {
+  let name = \"foo\";
+  let children = List.map(el => <Text value=el />, [\"foo\", \"bar\"]);
+  <View>
+    <Text value=name />
     <View>
-      <Text value=name />
-      <View>
-        ...children
-      </View>
+      { children }
     </View>
-  }
+  </View>
 };
 "))
 
 (ert-deftest indent-jsx-4 ()
   (test-indent "
 let make = (name, children) => {
-  ...component,
-  render: self =>
+  <View>
+    <Text value=name />
     <View>
-      <Text value=name />
-      <View>
-        ...children
-      </View>
+      { children }
     </View>
+  </View>
 };
 "))
 

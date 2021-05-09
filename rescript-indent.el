@@ -82,7 +82,7 @@ Argument STR string to search for."
 
 ;;; Start of a rescript binding
 (defvar rescript-binding
-  (regexp-opt '("let" "type" "module" "fun")))
+  (regexp-opt '("let" "type" "module")))
 
 (defun rescript-beginning-of-defun (&optional arg)
   "Move backward to the beginning of the current defun.
@@ -155,7 +155,7 @@ This is written mainly to be used as `end-of-defun-function' for ReScript."
                        (if (save-excursion
                              (rescript-rewind-to-beginning-of-current-level-expr)
                              ;; beginning of previous tag
-                             (looking-at "\\(<\\|\\.\\.\\.\\)"))
+                             (looking-at (rx (or "<" "{"))))
                            (progn
                              (rescript-rewind-to-beginning-of-current-level-expr)
                              ;; beginning of previous tag
@@ -218,6 +218,7 @@ This is written mainly to be used as `end-of-defun-function' for ReScript."
               ((looking-at "<") baseline)
               ((looking-at "<.*/>") baseline)
               ((looking-at "\\.\\.\\.") baseline)
+              ((looking-at "{") baseline)
 
               ;; A closing brace is 1 level unindented
               ((looking-at "}\\|)\\|\\]")
@@ -303,7 +304,7 @@ This is written mainly to be used as `end-of-defun-function' for ReScript."
                            (rescript-rewind-irrelevant)
                            (rescript-rewind-to-beginning-of-current-level-expr)
 
-                           (if (looking-at "|")
+                           (if (looking-at (rx (or "|" "@")))
                                baseline
                              (+ baseline rescript-indent-offset)))))
                   ;; Point is now at the beginning of the current line
@@ -314,9 +315,13 @@ This is written mainly to be used as `end-of-defun-function' for ReScript."
       ;; indentation), jump with the indentation change.  Otherwise, save the
       ;; excursion so that adding the indentations will leave us at the
       ;; equivalent position within the line to where we were before.
-      (if (<= (current-column) (current-indentation))
-          (indent-line-to indent)
-        (save-excursion (indent-line-to indent))))))
+      (cond
+       ((< indent 0)
+        (indent-line-to 0))
+       ((<= (current-column) (current-indentation))
+        (indent-line-to indent))
+       (t
+        (save-excursion (indent-line-to indent)))))))
 
 (provide 'rescript-indent)
 
