@@ -26,7 +26,6 @@
 ;;; Code:
 
 (require 'rescript-indent)
-(require 'refmt)
 (require 'rescript-interaction)
 
 (eval-when-compile (require 'rx)
@@ -161,8 +160,6 @@ Argument END marks the end of the function."
 (defvar rescript-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-a") #'rescript-mode-find-alternate-file)
-    (define-key map (kbd "C-c C-r") #'refmt-region-ocaml-to-rescript)
-    (define-key map (kbd "C-c C-o") #'refmt-region-rescript-to-ocaml)
     map))
 
 ;;;###autoload

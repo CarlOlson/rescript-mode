@@ -33,7 +33,7 @@ $( $EMACS -batch --eval "(require 'ert)" > /dev/null 2>&1 ) || {
 };
 
 # All the files rescript-mode depends on (in dependency order!)
-DEPS_INCLUDES="-l refmt.el -l rescript-indent.el -l rescript-interaction.el"
+DEPS_INCLUDES="-l rescript-indent.el -l rescript-interaction.el"
 
 rm *.elc
 WARNINGS="$($EMACS -Q -batch $DEPS_INCLUDES -f batch-byte-compile rescript-mode.el 2>&1 | grep -v '^Wrote ')"
