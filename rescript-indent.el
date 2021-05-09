@@ -165,33 +165,33 @@ This is written mainly to be used as `end-of-defun-function' for ReScript."
                               ((looking-at "<")
                                (+ (current-column) rescript-indent-offset))
                               (t (current-column))))
-                           (progn
-                             (unless (and (looking-at "[[:space:]\n]*<")
-                                          (rescript-looking-back-str "=>"))
-                               (backward-up-list))
-                             (rescript-rewind-to-beginning-of-current-level-expr)
+                         (progn
+                           (unless (and (looking-at "[[:space:]\n]*<")
+                                        (rescript-looking-back-str "=>"))
+                             (backward-up-list))
+                           (rescript-rewind-to-beginning-of-current-level-expr)
 
-                             (cond
-                              ((looking-at "switch")
-                               (current-column))
+                           (cond
+                            ((looking-at "switch")
+                             (current-column))
 
-                              ((looking-at "if")
-                               (+ (current-column) rescript-indent-offset))
+                            ((looking-at "if")
+                             (+ (current-column) rescript-indent-offset))
 
-                              ((looking-at "|")
-                               (+ (current-column) (* rescript-indent-offset 2)))
+                            ((looking-at "|")
+                             (+ (current-column) (* rescript-indent-offset 2)))
 
-                              ((looking-at "[[:word:]]+:.*=> ?{?$")
-                               (+ (current-column) rescript-indent-offset))
+                            ((looking-at "[[:word:]]+:.*=> ?{?$")
+                             (+ (current-column) rescript-indent-offset))
 
-                              (t
-                               (let ((current-level (rescript-paren-level)))
-                                 (save-excursion
-                                   (while (and (= current-level (rescript-paren-level))
-                                               (not (looking-at rescript-binding)))
-                                     (rescript-rewind-irrelevant)
-                                     (rescript-rewind-to-beginning-of-current-level-expr))
-                                   (+ (current-column) rescript-indent-offset)))))))))))
+                            (t
+                             (let ((current-level (rescript-paren-level)))
+                               (save-excursion
+                                 (while (and (= current-level (rescript-paren-level))
+                                             (not (looking-at rescript-binding)))
+                                   (rescript-rewind-irrelevant)
+                                   (rescript-rewind-to-beginning-of-current-level-expr))
+                                 (+ (current-column) rescript-indent-offset)))))))))))
              (cond
               ;; A function return type is indented to the corresponding function arguments
               ((looking-at "=>")

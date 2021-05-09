@@ -25,7 +25,7 @@ Similar to `forward-char` but it does not signal errors
 `beginning-of-buffer` and `end-of-buffer`.  It optionally takes a
 STEP parameter for jumping back more than one character."
   (when step (goto-char (+ (point) step))
-    (goto-char (1+ (point)))))
+        (goto-char (1+ (point)))))
 
 (defun rescript-in-literal-p ()
   "Return non-nil if point is inside an ReScript literal."
@@ -109,11 +109,11 @@ LIMIT is passed to `re-search-backward` directly."
    ((eobp) (point))
    ((or (rescript-in-between-comment-chars-p)
         (rescript-looking-at-comment-delimiters-p)) (progn
-                                                    (rescript-forward-char 1)
-                                                    (rescript-skip-blank-and-comments)))
+        (rescript-forward-char 1)
+        (rescript-skip-blank-and-comments)))
    ((rescript-in-between-comment-delimiters-p) (progn
-                                               (search-forward "*/" nil t)
-                                               (rescript-skip-blank-and-comments)))
+                                                 (search-forward "*/" nil t)
+                                                 (rescript-skip-blank-and-comments)))
    ((eolp) (progn
              (rescript-forward-char 1)
              (rescript-skip-blank-and-comments)))
@@ -125,16 +125,16 @@ LIMIT is passed to `re-search-backward` directly."
   (cond
    ((bobp) (point))
    ((looking-back rescript-comment-delimiter-regexp) (progn
-                                                     (rescript-backward-char 1)
-                                                     (rescript-skip-back-blank-and-comments)))
+                                                       (rescript-backward-char 1)
+                                                       (rescript-skip-back-blank-and-comments)))
    ((rescript-in-between-comment-delimiters-p) (progn
-                                               (search-backward "/*" nil t)
-                                               (rescript-backward-char 1)
-                                               (rescript-skip-back-blank-and-comments)))
+                                                 (search-backward "/*" nil t)
+                                                 (rescript-backward-char 1)
+                                                 (rescript-skip-back-blank-and-comments)))
    ((or (rescript-in-between-comment-chars-p)
         (rescript-looking-at-comment-delimiters-p)) (progn
-                                                    (rescript-backward-char 1)
-                                                    (rescript-skip-back-blank-and-comments)))
+        (rescript-backward-char 1)
+        (rescript-skip-back-blank-and-comments)))
    ((bolp) (progn
              (rescript-backward-char 1)
              (rescript-skip-back-blank-and-comments)))
@@ -147,7 +147,7 @@ LIMIT is passed to `re-search-backward` directly."
 
 (defconst rescript-find-phrase-beginning-regexp
   (concat (rescript-ro "end" "type" "module" "sig" "struct" "class"
-                     "exception" "open" "let")
+                       "exception" "open" "let")
           "\\|^#[ \t]*[a-z][_a-z]*\\>\\|;"))
 
 (defun rescript-at-phrase-start-p ()
@@ -204,7 +204,7 @@ phrease cannot be found."
              (rescript-skip-blank-and-comments)
              (rescript-next-phrase)))
    ((rescript-inside-block-scope-p) (progn (rescript-skip-to-close-delimiter)
-                                         (rescript-next-phrase)))
+                                           (rescript-next-phrase)))
    ((looking-at ";") (progn
                        (forward-char 1)
                        (rescript-next-phrase)))
