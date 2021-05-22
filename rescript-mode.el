@@ -37,7 +37,7 @@
   (let ((table (make-syntax-table)))
 
     ;; Operators
-    (dolist (i '(?+ ?- ?* ?/ ?& ?| ?^ ?! ?< ?> ?~ ?@))
+    (dolist (i '(?+ ?- ?* ?/ ?& ?| ?^ ?! ?< ?> ?~ ?@ ?%))
       (modify-syntax-entry i "." table))
 
     ;; Strings
@@ -71,8 +71,8 @@
 (defconst rescript-mode-keywords
   (split-string
    "and as assert constraint else exception external for if in
-include lazy let module mutable of open rec switch try type when
-while with"))
+include lazy let module mutable of open rec switch try catch type
+when while with"))
 
 (defconst rescript-mode-consts
   '("true" "false"))
@@ -80,6 +80,16 @@ while with"))
 (defconst rescript-special-types
   (split-string
    "int float string char bool unit list array exn option ref"))
+
+(defconst rescript-mode-extensions
+  (split-string "debugger external raw re"))
+
+(defconst rescript-mode-attributes
+  (split-string
+   "as deriving get get_index inline int module new obj optional
+  return send scope set set_index variadic string this uncurry
+  unwrap val deprecated genType JSX react.component warning
+  unboxed"))
 
 (defconst rescript-camel-case
   (rx symbol-start
@@ -109,7 +119,9 @@ Argument WORDS argument to pass to `regexp-opt`."
 
 ;;; Syntax highlighting for ReScript
 (defvar rescript-font-lock-keywords
-  `((,(rescript-regexp-opt-symbols rescript-mode-keywords) . font-lock-keyword-face)
+  `((,(eval `(rx "@" (or ,@rescript-mode-attributes) word-end)) . font-lock-preprocessor-face)
+    (,(eval `(rx "%" (? "%") (or ,@rescript-mode-extensions) word-end)) . font-lock-preprocessor-face)
+    (,(rescript-regexp-opt-symbols rescript-mode-keywords) . font-lock-keyword-face)
     (,(rescript-regexp-opt-symbols rescript-special-types) . font-lock-builtin-face)
     (,(rescript-regexp-opt-symbols rescript-mode-consts) . font-lock-constant-face)
 

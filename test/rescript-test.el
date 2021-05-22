@@ -425,3 +425,25 @@ let g = () => {
 ;;    '("`" font-lock-string-face
 ;;      "${foo}" font-lock-variable-name-face
 ;;      "`" font-lock-string-face)))
+
+(ert-deftest attributes-without-args ()
+  (rescript-test-font-lock
+   "@optional"
+   '("@optional" font-lock-preprocessor-face)))
+
+(ert-deftest attributes-with-args ()
+  (rescript-test-font-lock
+   "@scope(\"Math\")"
+   '("@scope" font-lock-preprocessor-face
+     "\"Math\"" font-lock-string-face)))
+
+(ert-deftest extensions-without-args ()
+  (rescript-test-font-lock
+   "%debugger"
+   '("%debugger" font-lock-preprocessor-face)))
+
+(ert-deftest extensions-with-args ()
+  (rescript-test-font-lock
+   "%%raw(`foo`)"
+   '("%%raw" font-lock-preprocessor-face
+     "`foo`" font-lock-string-face)))
